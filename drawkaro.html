@@ -387,10 +387,9 @@ h1,h2,h3,.display{font-family:'Fredoka',sans-serif}
         <input type="text" id="joinCode" maxlength="6" placeholder="ROOM CODE" autocomplete="off">
         <button class="join-btn" id="joinBtn">Join</button>
       </div>
-      <button style="width:100%;padding:12px;border-radius:var(--r-md);font-family:'Fredoka';font-size:16px;font-weight:600;background:var(--ink-3);box-shadow:0 5px 0 rgba(0,0,0,.25);margin-top:8px" id="serverBtn">🌐 Multiplayer Server Setup</button>
     </div>
 
-    <p class="mp-note">🎙️ <b>Voice & multiplayer:</b> this build runs fully in your browser with AI players. Click "Multiplayer Server Setup" to connect to a real server and invite friends!</p>
+    <p class="mp-note">🎙️ <b>Voice & multiplayer:</b> Connected! Invite friends to this room to play together.</p>
   </div>
 </div>
 
@@ -545,27 +544,6 @@ h1,h2,h3,.display{font-family:'Fredoka',sans-serif}
   </div>
 </div>
 
-<div class="overlay" id="ovServer">
-  <div class="ov-card" style="max-width:600px;text-align:left">
-    <div class="ov-title">🌐 Multiplayer Server Setup</div>
-    <div class="ov-sub">Enter your DrawKaro server URL to enable real multiplayer</div>
-    <div class="field" style="margin:20px 0">
-      <label>Server URL</label>
-      <input type="text" id="serverUrlInput" placeholder="e.g. ws://localhost:8080 or wss://your-server.herokuapp.com" style="width:100%;padding:12px;border-radius:var(--r-md);border:3px solid rgba(255,255,255,.1);background:var(--ink);color:var(--text);font-size:15px;outline:none;font-family:monospace">
-    </div>
-    <div style="background:var(--ink);padding:14px;border-radius:var(--r-md);margin:16px 0;font-size:13px;line-height:1.6;color:var(--muted)">
-      <b>🚀 Deployment options:</b><br>
-      • <b>Heroku:</b> wss://your-app.herokuapp.com<br>
-      • <b>Railway:</b> wss://your-railway-app.up.railway.app<br>
-      • <b>Render:</b> wss://your-service.onrender.com<br>
-      • <b>Local:</b> ws://localhost:8080
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn-ghost" style="flex:1;margin-top:0" id="serverCancelBtn">Cancel</button>
-      <button class="big-btn" style="flex:2;margin-top:0" id="serverConnectBtn">Connect</button>
-    </div>
-  </div>
-</div>
 
 <div class="announce" id="announce"></div>
 <div id="fx"></div>
@@ -856,32 +834,6 @@ $('#playBtn').onclick=()=>{
   startGame();
 };
 
-/* ----- server setup ----- */
-$('#serverBtn').onclick=()=>{
-  const autoUrl = getAutoServerUrl();
-  $('#serverUrlInput').value = NET_URL || autoUrl;
-  $('#serverUrlInput').placeholder = `Auto-detected: ${autoUrl}`;
-  $('#ovServer').classList.add('show');
-};
-$('#serverCancelBtn').onclick=()=>{
-  $('#ovServer').classList.remove('show');
-};
-$('#serverConnectBtn').onclick=()=>{
-  const url = $('#serverUrlInput').value.trim();
-  if(!url) {
-    toast('Enter a server URL');
-    return;
-  }
-  if(!url.startsWith('ws://') && !url.startsWith('wss://')) {
-    toast('URL must start with ws:// or wss://');
-    return;
-  }
-  NET_URL = url;
-  localStorage.setItem('drawkaro-server-url', url);
-  toast(`✅ Server URL saved: ${url}`);
-  $('#ovServer').classList.remove('show');
-  Net.connect(NET_URL);
-};
 
 /* ----- private room ----- */
 const ROOM_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
