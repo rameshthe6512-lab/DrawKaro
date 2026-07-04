@@ -1708,6 +1708,30 @@ function handleNetMessage(msg) {
   else if(t === 'gameStarted') {
     if(state.phase === 'idle') startGame();
   }
+  else if(t === 'turnStart') {
+    // Server telling us who should draw now
+    state.drawerId = msg.drawerId;
+    const isMyTurn = state.drawerId === state.you.id;
+    const drawerName = msg.drawerName || nameOf(state.drawerId);
+
+    clearBotTimers(); stopTimer();
+    state.players.forEach(p=>{p.guessed=false;p.roundGain=0;});
+    state.word=''; state.revealed=[];
+    clearBoard(); renderPlayers(); renderHint();
+    $('#tools').classList.toggle('disabled', !isMyTurn);
+    state.phase='choosing';
+
+    if(isMyTurn){
+      banner(`Your turn to draw! ✏️`, 2000);
+      const words = [pick(langWordPool()), pick(langWordPool()), pick(langWordPool())];
+      pickedWords = words;
+      showWordPicker(words);
+    } else {
+      banner(`${drawerName} is drawing — guess! 🎨`, 2000);
+    }
+
+    console.log(`🎨 Turn started: ${drawerName} is drawing`);
+  }
   else if(t === 'op') { applyRemoteOp(msg); }
   else if(t === 'chat') { chatMsg(`<b>${esc(msg.playerName)}:</b> ${esc(msg.msg)}`); }
   else if(t === 'rtc') { handleRtcMessage(msg); }

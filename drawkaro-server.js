@@ -40,8 +40,9 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 // State
-const rooms = new Map(); // roomCode -> {code, host, players, gameState, ...}
+const rooms = new Map(); // roomCode -> {code, host, players, gameState, currentDrawerId, turnIndex, ...}
 const clients = new Map(); // ws -> {playerId, roomCode, playerData}
+const socketsToRooms = new Map(); // ws -> roomCode (for broadcast)
 
 console.log(`🎨 DrawKaro server listening on ws://localhost:${PORT}`);
 
@@ -175,6 +176,8 @@ function startGame(ws, msg) {
   room.gameState = 'playing';
   room.ops = [];
   room.messages = [];
+  room.turnOrder = room.players.map(p => p.id).sort(() => Math.random() - 0.5);
+  room.turnIndex = 0;
 
   console.log(`🎮 game started in ${roomCode} (${room.players.length} players)`);
 
@@ -183,6 +186,9 @@ function startGame(ws, msg) {
     players: room.players,
     settings: room.settings,
   });
+
+  // Start first turn
+  setTimeout(() => startGameRound(roomCode), 500);
 }
 
 function broadcast(roomCode, msg) {
@@ -206,6 +212,34 @@ function broadcast(roomCode, msg) {
     room.messages.push(msg);
     if (room.messages.length > 100) room.messages.shift();
   }
+}
+
+function startGameRound(roomCode) {
+  const room = rooms.get(roomCode);
+  if (!room || room.gameState !== 'playing') return;
+
+  // Set up turn order if not already done
+  if (!room.turnOrder) {
+    room.turnOrder = room.players.map(p => p.id).sort(() => Math.random() - 0.5);
+    room.turnIndex = 0;
+  }
+
+  // Get current drawer
+  if (room.turnIndex >= room.turnOrder.length) {
+    room.turnIndex = 0;
+  }
+
+  room.currentDrawerId = room.turnOrder[room.turnIndex];
+  room.turnIndex++;
+
+  // Announce who's drawing
+  broadcast(roomCode, {
+    type: 'turnStart',
+    drawerId: room.currentDrawerId,
+    drawerName: room.players.find(p => p.id === room.currentDrawerId)?.name
+  });
+
+  console.log(`🎨 ${room.currentDrawerId} is drawing in room ${roomCode}`);
 }
 
 function forwardToPlayer(roomCode, targetPlayerId, msg) {
