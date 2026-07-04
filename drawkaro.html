@@ -1604,7 +1604,17 @@ function getAutoServerUrl() {
   return `${protocol}//${loc.host}`;
 }
 let NET_URL = getAutoServerUrl();
-const rtcConfig = { iceServers: [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun1.l.google.com:19302'}] };
+const rtcConfig = {
+  iceServers: [
+    {urls: 'stun:stun.l.google.com:19302'},
+    {urls: 'stun:stun1.l.google.com:19302'},
+    {urls: 'stun:stun2.l.google.com:19302'},
+    {urls: 'stun:stun3.l.google.com:19302'},
+    {urls: 'stun:stun4.l.google.com:19302'},
+    {urls: 'stun:stun.services.mozilla.com:3478'},
+    {urls: 'stun:stun.stunprotocol.org:3478'}
+  ]
+};
 const peerConnections = new Map(); // playerId -> RTCPeerConnection
 const audioElements = new Map(); // playerId -> <audio>
 
@@ -1812,11 +1822,25 @@ async function initiateVoiceCall(targetPlayerId) {
 
     pc.onicecandidate = (event) => {
       if(event.candidate) {
+        console.log('📡 ICE candidate gathered:', event.candidate.candidate);
         Net.sendRtc(targetPlayerId, {
           type: 'ice-candidate',
           candidate: event.candidate
         });
       }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log(`🔌 Connection state with ${targetPlayerId}:`, pc.connectionState);
+      if(pc.connectionState === 'failed') {
+        toast('⚠️ Voice connection failed - retrying...');
+        pc.close();
+        peerConnections.delete(targetPlayerId);
+      }
+    };
+
+    pc.onicegatheringstatechange = () => {
+      console.log('❄️ ICE gathering state:', pc.iceGatheringState);
     };
 
     const offer = await pc.createOffer();
@@ -1826,8 +1850,8 @@ async function initiateVoiceCall(targetPlayerId) {
       sdp: pc.localDescription
     });
   } catch(err) {
-    console.error('voice call failed:', err);
-    toast('❌ Voice connection failed');
+    console.error('🎙️ Voice call failed:', err);
+    toast('❌ Voice connection failed - check permissions');
   }
 }
 
@@ -1867,21 +1891,39 @@ async function handleRtcMessage(msg) {
 
         pc.onicecandidate = (event) => {
           if(event.candidate) {
+            console.log('📡 ICE candidate gathered:', event.candidate.candidate);
             Net.sendRtc(fromPlayerId, {
               type: 'ice-candidate',
               candidate: event.candidate
             });
           }
         };
+
+        pc.onconnectionstatechange = () => {
+          console.log(`🔌 Connection state with ${fromPlayerId}:`, pc.connectionState);
+          if(pc.connectionState === 'failed') {
+            console.warn('⚠️ Connection failed, closing...');
+            pc.close();
+            peerConnections.delete(fromPlayerId);
+          }
+        };
+
+        pc.onicegatheringstatechange = () => {
+          console.log('❄️ ICE gathering state:', pc.iceGatheringState);
+        };
       }
 
-      await pc.setRemoteDescription(msg.sdp);
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      Net.sendRtc(fromPlayerId, {
-        type: 'answer',
-        sdp: pc.localDescription
-      });
+      try {
+        await pc.setRemoteDescription(msg.sdp);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        Net.sendRtc(fromPlayerId, {
+          type: 'answer',
+          sdp: pc.localDescription
+        });
+      } catch(e) {
+        console.error('🎙️ Failed to set remote description:', e);
+      }
     }
     else if(msg.rtcType === 'answer') {
       const pc = peerConnections.get(fromPlayerId);
@@ -1893,9 +1935,17 @@ async function handleRtcMessage(msg) {
       const pc = peerConnections.get(fromPlayerId);
       if(pc && msg.candidate) {
         try {
+          console.log('❄️ Adding ICE candidate from', fromPlayerId);
           await pc.addIceCandidate(msg.candidate);
+          console.log('✅ ICE candidate added successfully');
         } catch(e) {
-          console.warn('ice candidate error:', e);
+          // Ignore errors for candidates that couldn't be added
+          // This is normal when candidates arrive out of order
+          if(e.code === 'InvalidStateError') {
+            console.warn('⚠️ ICE candidate came in wrong state (normal):', e.message);
+          } else {
+            console.warn('🎙️ ICE candidate error:', e.message);
+          }
         }
       }
     }
