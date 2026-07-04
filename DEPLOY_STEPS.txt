@@ -1,0 +1,148 @@
+═══════════════════════════════════════════════════════════════
+🚀 RAILWAY DIRECT DEPLOYMENT - STEP BY STEP
+═══════════════════════════════════════════════════════════════
+
+STEP 1: LOGIN TO RAILWAY
+───────────────────────────────────────────────────────────────
+Command: railway login
+
+What happens:
+- Opens browser for authentication
+- Click "Login" button on Railway website
+- Authorize with GitHub
+- Returns to terminal when done
+
+Expected output:
+✓ Authenticated successfully
+
+
+STEP 2: INITIALIZE PROJECT
+───────────────────────────────────────────────────────────────
+Command: railway init
+
+What happens:
+- Asks if you want to create new project or use existing
+- Choose: "Create new project"
+- Enter project name: "drawkaro"
+- Creates .railway/config.json
+
+Expected output:
+✓ Project initialized
+✓ Config saved
+
+
+STEP 3: SET ENVIRONMENT VARIABLES (Optional)
+───────────────────────────────────────────────────────────────
+Command: railway variables set NODE_ENV production
+
+What happens:
+- Sets NODE environment to production
+- Optional: Add GEMINI_API_KEY if using AI
+
+Expected output:
+✓ Variable set
+
+
+STEP 4: DEPLOY TO RAILWAY
+───────────────────────────────────────────────────────────────
+Command: railway up
+
+What happens:
+- Reads drawkaro-server.js
+- Installs dependencies from package.json
+- Builds project
+- Deploys to Railway servers
+- Returns public URL
+
+Expected output:
+🚀 Deploying...
+[████████████████████] 100%
+✅ Deployed successfully!
+   URL: https://drawkaro-prod-abc123.up.railway.app
+
+
+STEP 5: VERIFY DEPLOYMENT
+───────────────────────────────────────────────────────────────
+Command: railway status
+
+What happens:
+- Shows deployment status
+- Shows public URL
+- Shows environment variables
+
+Expected output:
+Status: Running ✅
+URL: https://drawkaro-prod-abc123.up.railway.app
+
+
+STEP 6: TEST THE DEPLOYMENT
+───────────────────────────────────────────────────────────────
+1. Open drawkaro.html locally
+2. Click "🌐 Multiplayer Server Setup"
+3. Enter: wss://drawkaro-prod-abc123.up.railway.app
+4. Click "Connect"
+5. Create private room
+6. Test multiplayer
+
+
+═══════════════════════════════════════════════════════════════
+QUICK COPY-PASTE COMMANDS
+═══════════════════════════════════════════════════════════════
+
+cd C:\Users\Ram\OneDrive\Desktop\files
+railway login
+railway init
+railway variables set NODE_ENV production
+railway up
+railway status
+
+═══════════════════════════════════════════════════════════════
+AFTER DEPLOYMENT - WHAT TO DO
+═══════════════════════════════════════════════════════════════
+
+1. Copy the URL from railway status
+   Example: https://drawkaro-prod-xyz.up.railway.app
+
+2. Use in game:
+   Server Setup URL: wss://drawkaro-prod-xyz.up.railway.app
+
+3. Share with friends:
+   Give them the URL and they can join!
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+If deployment fails:
+
+1. Check logs
+   railway logs --follow
+
+2. Check if package.json is correct
+   cat package.json
+   (Should have "type": "module")
+
+3. Check if drawkaro-server.js exists
+   ls drawkaro-server.js
+
+4. Try deploying again
+   railway up
+
+5. If still fails, check:
+   - PORT configuration
+   - Node version compatibility
+   - ES6 import syntax
+
+═══════════════════════════════════════════════════════════════
+USEFUL COMMANDS
+═══════════════════════════════════════════════════════════════
+
+railway logs --follow        # Real-time logs
+railway status               # Check deployment
+railway down                 # Stop deployment
+railway variables            # See all variables
+railway redeploy             # Redeploy latest code
+
+═══════════════════════════════════════════════════════════════
+Ready? Start with: railway login
+═══════════════════════════════════════════════════════════════
