@@ -1275,9 +1275,19 @@ function beginTurn(word){
     banner(`You are drawing: ${word.toUpperCase()} — go!`,3000);
     scheduleBotGuessers();
   } else {
+    const drawer = state.players.find(p => p.id === state.drawerId);
+    const isBot = drawer && drawer.persona;  // Real players don't have persona
+
     banner(`${nameOf(state.drawerId)} is drawing — type your guess! ⌨️`,3000);
-    botDraw(word);
-    scheduleBotCoGuessers();
+
+    if(isBot) {
+      // Only animate drawing for actual bots
+      botDraw(word);
+      scheduleBotCoGuessers();
+    } else {
+      // Real players: wait for drawing ops from server
+      scheduleBotCoGuessers();  // Only guessing bots guess, real players guess via input
+    }
   }
 }
 
@@ -1409,7 +1419,7 @@ function playerGuessed(p){
 /* bots guessing while YOU draw */
 function scheduleBotGuessers(){
   const wrongPool=langWordPool().filter(w=>w!==state.word);
-  state.players.filter(p=>!p.isYou).forEach(bot=>{
+  state.players.filter(p=>!p.isYou&&p.persona).forEach(bot=>{  // Only bots have persona
     const willGuess=Math.random()<bot.persona.skill+.15;
     const when=rand(.28,.92)*state.drawTime*1000*bot.persona.speed;
     // wrong guesses & banter first
@@ -1436,6 +1446,9 @@ function scheduleBotGuessers(){
 function scheduleBotCoGuessers(){
   const wrongPool=langWordPool().filter(w=>w!==state.word);
   state.players.filter(p=>!p.isYou&&p.id!==state.drawerId).forEach(bot=>{
+    // Only schedule bot behavior for actual bots (they have persona)
+    if(!bot.persona) return;  // Skip real players
+
     if(Math.random()<.4+bot.persona.skill*.4){
       const when=rand(.45,.95)*state.drawTime*1000;
       const t=setTimeout(()=>{ if(state.phase==='draw') playerGuessed(bot); },when);
