@@ -1699,6 +1699,9 @@ function handleNetMessage(msg) {
   }
   else if(t === 'playerJoined') {
     const p = msg.player;
+    // Don't add yourself to roomBots - you're already in state.you!
+    if(p.id === state.you.id) return;
+
     if(!state.roomBots.find(x => x.id === p.id)) {
       state.roomBots.push(p);
       renderRoomPlayers();
