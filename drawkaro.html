@@ -811,7 +811,13 @@ $('#avColor').onclick=()=>{avCol=(avCol+1)%AV_COLORS.length;paintAvatarBig();Aud
 paintAvatarBig();
 
 function grabIdentity(){
-  state.you.name = $('#nameInput').value.trim() || 'You';
+  let name = $('#nameInput').value.trim();
+  if(!name) {
+    const adj = ['Speedy','Sketchy','Artsy','Happy','Cool','Quick','Swift','Smart','Bright','Bold'];
+    const noun = ['Artist','Doodler','Scribbler','Drawer','Creator','Master','Pro','Genius','Legend'];
+    name = pick(adj) + pick(noun);
+  }
+  state.you.name = name;
   state.you.face = FACES[avFace]; state.you.color = AV_COLORS[avCol];
 }
 function readRoomSettings(){
@@ -868,11 +874,18 @@ $('#createRoomBtn').onclick=()=>openRoom(makeCode());
 $('#joinBtn').onclick=()=>{
   const c=$('#joinCode').value.trim().toUpperCase();
   if(c.length<4){ toast('Enter a room code (4–6 letters)'); return; }
+  const name = $('#nameInput').value.trim();
+  if(!name) { toast('👤 Enter your name first!'); $('#nameInput').focus(); return; }
   openRoom(c); toast(`Joined room ${c} — friends with this code land here too!`);
 };
 /* invite links: #room=CODE prefills the join box */
 (function(){ const m=location.hash.match(/room=([A-Z0-9]{4,6})/i);
-  if(m){ $('#joinCode').value=m[1].toUpperCase(); toast(`🔗 Invite detected — room ${m[1].toUpperCase()}. Enter your name & hit Join!`);} })();
+  if(m){
+    $('#joinCode').value=m[1].toUpperCase();
+    toast(`🔗 Room ${m[1].toUpperCase()} found! 👤 Enter your name below & click Join.`);
+    setTimeout(()=>$('#nameInput').focus(), 100);
+  }
+})();
 
 $('#copyLinkBtn').onclick=async function(){
   const link=$('#inviteLink').value;
