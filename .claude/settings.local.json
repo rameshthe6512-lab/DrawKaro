@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(timeout 5 node drawkaro-server.js)",
+      "Bash(grep -E '\\\\.\\(html|js|md|json|Procfile\\)$')",
+      "Bash(awk '{print $9, \"\\(\" $5 \"\\)\"}')",
+      "mcp__3033625f-a979-4826-a701-9f4f839d482d__deploy_to_vercel",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Initial DrawKaro deployment - all features integrated *)",
+      "Bash(git config *)"
+    ]
+  }
+}

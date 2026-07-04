@@ -1,0 +1,27 @@
+{
+  "name": "drawkaro",
+  "version": "1.0.0",
+  "description": "Multiplayer drawing game with voice chat - like Skribbl.io",
+  "main": "drawkaro-server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node drawkaro-server.js",
+    "dev": "node drawkaro-server.js"
+  },
+  "keywords": [
+    "drawing",
+    "game",
+    "multiplayer",
+    "websocket",
+    "webrtc",
+    "voice-chat"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.15.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
