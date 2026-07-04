@@ -1768,11 +1768,24 @@ function handleNetMessage(msg) {
 
     if(isMyTurn){
       banner(`Your turn to draw! ✏️`, 2000);
-      const words = [pick(langWordPool()), pick(langWordPool()), pick(langWordPool())];
-      pickedWords = words;
-      showWordPicker(words);
+      // Show word selection overlay
+      const pool=langWordPool();
+      let opts=[...new Set(pool)].sort(()=>Math.random()-.5).slice(0,state.settings.wordCount||3);
+      if(state.settings.mode==='combo'){
+        const p2=[...new Set(pool)].sort(()=>Math.random()-.5);
+        opts=opts.map((w,i)=>w+' '+(p2.find(x=>x!==w&&!opts.includes(x))||p2[i]||w));
+      }
+      const wc=$('#wordChoices'); wc.innerHTML='';
+      opts.forEach(w=>{
+        const b=document.createElement('button'); b.className='word-choice'; b.textContent=w;
+        b.onclick=()=>{ $('#ovChoose').classList.remove('show'); beginTurn(w); };
+        wc.appendChild(b);
+      });
+      $('#ovChoose').classList.add('show');
     } else {
       banner(`${drawerName} is drawing — guess! 🎨`, 2000);
+      announce(`🖌️ ${drawerName} is drawing…`);
+      sys(`✏️ <b>${drawerName}</b> is choosing a word…`);
     }
 
     console.log(`🎨 Turn started: ${drawerName} is drawing`);
