@@ -1657,6 +1657,15 @@ const Net = {
 
   joinRoom(roomCode, playerData) {
     if(!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    console.log('📤 Sending joinRoom:', {
+      roomCode,
+      playerData: {
+        id: playerData.id,
+        name: playerData.name,
+        face: playerData.face,
+        color: playerData.color
+      }
+    });
     this.ws.send(JSON.stringify({
       type: 'joinRoom',
       roomCode,
