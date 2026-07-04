@@ -137,17 +137,21 @@ function joinRoom(ws, msg, clientId) {
   console.log(`✓ ${playerData.name} joined ${roomCode} (${room.players.length}/${room.settings.players})`);
 
   // Send current room state to joiner
-  ws.send(
-    JSON.stringify({
-      type: 'roomState',
-      roomCode,
-      players: room.players,
-      settings: room.settings,
-      gameState: room.gameState,
-      ops: room.ops.slice(-100), // last 100 ops for replay
-      messages: room.messages.slice(-50),
-    })
-  );
+  const roomStateMsg = {
+    type: 'roomState',
+    roomCode,
+    players: room.players,
+    settings: room.settings,
+    gameState: room.gameState,
+    ops: room.ops.slice(-100), // last 100 ops for replay
+    messages: room.messages.slice(-50),
+  };
+  console.log(`📤 Sending roomState to ${playerData.name}:`, {
+    roomCode,
+    playerCount: room.players.length,
+    players: room.players.map(p => ({id: p.id, name: p.name}))
+  });
+  ws.send(JSON.stringify(roomStateMsg));
 
   // Broadcast join to others
   broadcast(roomCode, {

@@ -909,6 +909,10 @@ function renderRoomPlayers(){
   me.innerHTML=`<div class="p-avatar" style="background:${state.you.color}">${state.you.face}</div>
     <div><div class="s-name">${esc(state.you.name)}</div><div class="s-tag">👑 HOST (you)</div></div>`;
   wrap.appendChild(me);
+  console.log('🎨 renderRoomPlayers:', {
+    displayingYou: state.you.name,
+    displayingOthers: state.roomBots.map(b => b.name)
+  });
   state.roomBots.forEach((b,i)=>{
     const d=document.createElement('div'); d.className='slot';
     d.innerHTML=`<div class="p-avatar" style="background:${b.color}">${b.face}</div>
@@ -1677,8 +1681,14 @@ function handleNetMessage(msg) {
   const t = msg.type;
   if(t === 'roomState') {
     // initial state from server on join
+    console.log('🔍 roomState received:', {
+      allPlayers: msg.players.map(p => ({id: p.id, name: p.name})),
+      currentPlayerId: state.you.id,
+      currentPlayerName: state.you.name
+    });
     state.roomBots = msg.players.filter(p => p.id !== state.you.id);
     state.players = msg.players;
+    console.log('📊 After filtering roomBots:', state.roomBots.map(p => ({id: p.id, name: p.name})));
     renderRoomPlayers();
     if(msg.messages && msg.messages.length) {
       const recent = msg.messages.slice(-10);
